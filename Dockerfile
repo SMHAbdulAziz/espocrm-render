@@ -29,16 +29,12 @@ COPY planetscale-ca.pem /etc/ssl/certs/planetscale-ca.pem
 # Create dummy config.php
 RUN mkdir -p /var/www/html/data && \
     echo "<?php return [
-        'database' => [
-            'driver' => 'pdo_mysql',
-            'host' => 'localhost',
-            'port' => '3306',
-            'dbname' => 'dummydb',
-            'user' => 'dummyuser',
-            'password' => 'dummypass',
-        ],
-<<<<<<< HEAD
-    ]; ?>" > /var/www/html/data/config.php
-=======
-    ]; ?>" > /var/www/html/data/config.php
->>>>>>> 8b897dea5d118745915d2cb2f06e18cc2203aa60
+    'database' => [
+        'driver' => 'pdo_mysql',
+        'host' => 'localhost',
+        'dbname' => 'espocrm',
+        'user' => 'root',
+        'password' => 'password',
+        'charset' => 'utf8mb4',
+    ]
+];" > /var/www/html/data/config.php
