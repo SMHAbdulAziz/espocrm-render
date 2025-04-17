@@ -1,15 +1,12 @@
 FROM php:8.1-apache
 
-# Install required packages and PHP extensions
+# Install MySQL and required PHP extensions
 RUN apt-get update && \
-    apt-get install -y unzip libzip-dev zip libpng-dev libicu-dev && \
+    apt-get install -y default-mysql-server unzip libzip-dev zip libpng-dev libicu-dev && \
     docker-php-ext-install mysqli pdo pdo_mysql zip gd intl && \
     a2enmod rewrite
 
-# Configure Apache properly
-RUN sed -i 's/DocumentRoot \/var\/www\/html/DocumentRoot \/var\/www\/html/' /etc/apache2/sites-available/000-default.conf
-
-# Enable .htaccess files
+# Configure Apache
 RUN { \
     echo '<Directory /var/www/html/>'; \
     echo '    AllowOverride All'; \
@@ -25,11 +22,15 @@ RUN unzip espocrm.zip && \
     cp -a EspoCRM-7.5.6/. /var/www/html/ && \
     rm -rf EspoCRM* espocrm.zip
 
-# Set proper permissions
+# Set permissions
 RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 755 /var/www/html && \
     find /var/www/html -type d -exec chmod 755 {} \; && \
     find /var/www/html -type f -exec chmod 644 {} \;
 
+# Configure MySQL and start services
+COPY start-services.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/start-services.sh
+
 EXPOSE 80
-CMD ["apache2-foreground"]
+CMD ["/usr/local/bin/start-services.sh"]
