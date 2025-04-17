@@ -1,0 +1,16 @@
+[
+    "assignedUser",
+    "teams",
+    "collaborators",
+    "status",
+    "priority",
+    "account",
+    "contact",
+    "number",
+    "isInternal",
+    "createdAt",
+    "createdBy",
+    "modifiedAt",
+    "streamUpdatedAt",
+    "description"
+]
