@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: espocrm
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    buildCommand: ""
+    startCommand: "apache2-foreground"
+    envVars:
+      - key: DB_HOST
+        fromDashboard: true
+      - key: DB_NAME
+        fromDashboard: true
+      - key: DB_USER
+        fromDashboard: true
+      - key: DB_PASSWORD
+        fromDashboard: true
