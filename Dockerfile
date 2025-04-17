@@ -2,7 +2,7 @@ FROM php:8.1-apache
 
 # Install MySQL and required PHP extensions
 RUN apt-get update && \
-    apt-get install -y default-mysql-server unzip libzip-dev zip libpng-dev libicu-dev && \
+    apt-get install -y default-mysql-server default-mysql-client unzip libzip-dev zip libpng-dev libicu-dev && \
     docker-php-ext-install mysqli pdo pdo_mysql zip gd intl && \
     a2enmod rewrite
 
@@ -28,9 +28,18 @@ RUN chown -R www-data:www-data /var/www/html && \
     find /var/www/html -type d -exec chmod 755 {} \; && \
     find /var/www/html -type f -exec chmod 644 {} \;
 
-# Configure MySQL and start services
-COPY start-services.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/start-services.sh
+# Create startup script
+RUN echo '#!/bin/bash\n\
+mkdir -p /var/run/mysqld\n\
+chown -R mysql:mysql /var/run/mysqld\n\
+service mariadb start || service mysql start\n\
+sleep 5\n\
+mysql -e "CREATE DATABASE IF NOT EXISTS espocrm;"\n\
+mysql -e "CREATE USER IF NOT EXISTS '"'"'espouser'"'"'@'"'"'localhost'"'"' IDENTIFIED BY '"'"'espopassword'"'"';"\n\
+mysql -e "GRANT ALL PRIVILEGES ON espocrm.* TO '"'"'espouser'"'"'@'"'"'localhost'"'"';"\n\
+mysql -e "FLUSH PRIVILEGES;"\n\
+apache2-foreground\n' > /usr/local/bin/startup.sh && \
+    chmod +x /usr/local/bin/startup.sh
 
 EXPOSE 80
-CMD ["/usr/local/bin/start-services.sh"]
+CMD ["/usr/local/bin/startup.sh"]
