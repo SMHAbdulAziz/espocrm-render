@@ -1,19 +1,11 @@
-# Use official PHP Apache image
-FROM php:8.1-apache
+FROM php:8.2-apache
 
-# Install required PHP extensions
+# Enable required PHP extensions
 RUN apt-get update && apt-get install -y \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libzip-dev \
-    zip \
-    unzip \
-    git \
-    curl \
-    mariadb-client \
+    libpng-dev libjpeg-dev libfreetype6-dev \
+    libzip-dev unzip libonig-dev libxml2-dev git \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd zip pdo pdo_mysql
+    && docker-php-ext-install pdo pdo_mysql gd zip mbstring
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
@@ -21,22 +13,16 @@ RUN a2enmod rewrite
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy EspoCRM source files into container (assumes they are in repo root)
-COPY . /var/www/html
+# Copy local files to the container
+COPY . .
 
-# Set correct document root to EspoCRM public folder
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf \
- && echo '<Directory /var/www/html/public>\n    AllowOverride All\n</Directory>' >> /etc/apache2/apache2.conf
-
-# Copy custom MySQL config for SSL (if you're using one, like my.cnf for PlanetScale)
-COPY my.cnf /usr/local/etc/php/conf.d/my.cnf
-
-# Set permissions
+# Set proper permissions
 RUN chown -R www-data:www-data /var/www/html \
- && chmod -R 755 /var/www/html
+    && chmod -R 755 /var/www/html
 
-# Expose HTTP
+# Expose port
 EXPOSE 80
 
-# Start Apache
-CMD ["apache2-foreground"]
+# Dockerfile snippet
+COPY planetscale-ca.pem /etc/ssl/certs/planetscale-ca.pem
+
