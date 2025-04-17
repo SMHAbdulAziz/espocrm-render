@@ -23,7 +23,14 @@ RUN chown -R www-data:www-data /var/www/html \
 # Expose port
 EXPOSE 80
 
-# Dockerfile snippet
+# Install required PHP extensions
+RUN apt-get update && apt-get install -y \
+    libpng-dev libjpeg-dev libfreetype6-dev \
+    libzip-dev unzip libonig-dev libxml2-dev git curl \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd zip pdo pdo_mysql mbstring
+
+# Add PlanetScale CA cert
 COPY planetscale-ca.pem /etc/ssl/certs/planetscale-ca.pem
 
 # Create dummy config.php
