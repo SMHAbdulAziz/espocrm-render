@@ -22,3 +22,5 @@ RUN chown -R www-data:www-data /var/www/html \
 
 # Expose port
 EXPOSE 80
+
+ADD https://certs.planetscale.com/ca.pem /etc/ssl/certs/planetscale-ca.pem
