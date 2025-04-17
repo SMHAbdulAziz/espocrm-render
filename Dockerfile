@@ -1,38 +1,24 @@
 FROM php:8.2-apache
 
-# Install dependencies
+# Enable required PHP extensions
 RUN apt-get update && apt-get install -y \
-    unzip \
-    libzip-dev \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    curl \
-    git \
-    && docker-php-ext-install pdo pdo_mysql zip
+    libpng-dev libjpeg-dev libfreetype6-dev \
+    libzip-dev unzip libonig-dev libxml2-dev git \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_mysql gd zip mbstring
 
-# Enable Apache mods
+# Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy files
-COPY . /var/www/html/
+# Copy local files to the container
+COPY . .
 
-# Set permissions
+# Set proper permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
 
-# Apache config for EspoCRM
-RUN echo '<Directory /var/www/html/>\n\
-    Options Indexes FollowSymLinks\n\
-    AllowOverride All\n\
-    Require all granted\n\
-</Directory>' > /etc/apache2/conf-available/espocrm.conf \
-    && a2enconf espocrm
-
+# Expose port
 EXPOSE 80
-
-CMD ["apache2-foreground"]
