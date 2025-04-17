@@ -42,4 +42,5 @@ apache2-foreground\n' > /usr/local/bin/startup.sh && \
     chmod +x /usr/local/bin/startup.sh
 
 EXPOSE 80
+COPY my.cnf /etc/mysql/my.cnf
 CMD ["/usr/local/bin/startup.sh"]
