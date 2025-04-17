@@ -26,3 +26,15 @@ EXPOSE 80
 # Dockerfile snippet
 COPY planetscale-ca.pem /etc/ssl/certs/planetscale-ca.pem
 
+# Create dummy config.php
+RUN mkdir -p /var/www/html/data && \
+    echo "<?php return [
+        'database' => [
+            'driver' => 'pdo_mysql',
+            'host' => 'localhost',
+            'port' => '3306',
+            'dbname' => 'dummydb',
+            'user' => 'dummyuser',
+            'password' => 'dummypass',
+        ],
+    ]; ?>" > /var/www/html/data/config.php
