@@ -8,10 +8,10 @@ services:
     startCommand: "apache2-foreground"
     envVars:
       - key: DB_HOST
-        value: <to be set later>
+        fromDashboard: true
       - key: DB_NAME
-        value: espocrm
+        fromDashboard: true
       - key: DB_USER
-        value: espouser
+        fromDashboard: true
       - key: DB_PASSWORD
-        value: espopass
+        fromDashboard: true
