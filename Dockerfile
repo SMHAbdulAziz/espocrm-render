@@ -1,27 +1,42 @@
+# Use official PHP Apache image
 FROM php:8.1-apache
 
-RUN apt-get update && \
-    apt-get install -y unzip libzip-dev zip libpng-dev libicu-dev ca-certificates && \
-    docker-php-ext-install mysqli pdo pdo_mysql zip gd intl && \
-    a2enmod rewrite
+# Install required PHP extensions
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    git \
+    curl \
+    mariadb-client \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd zip pdo pdo_mysql
 
-# Setup .htaccess access
-RUN echo '<Directory /var/www/html/>\n\
-    AllowOverride All\n\
-    Require all granted\n\
-</Directory>' >> /etc/apache2/apache2.conf
+# Enable Apache mod_rewrite
+RUN a2enmod rewrite
 
-# Get EspoCRM
+# Set working directory
 WORKDIR /var/www/html
-RUN rm -rf ./*
-ADD https://www.espocrm.com/downloads/EspoCRM-7.5.6.zip espocrm.zip
-RUN unzip espocrm.zip && mv EspoCRM-*/* . && rm -rf espocrm.zip EspoCRM-*
+
+# Copy EspoCRM source files into container (assumes they are in repo root)
+COPY . /var/www/html
+
+# Set correct document root to EspoCRM public folder
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf \
+ && echo '<Directory /var/www/html/public>\n    AllowOverride All\n</Directory>' >> /etc/apache2/apache2.conf
+
+# Copy custom MySQL config for SSL (if you're using one, like my.cnf for PlanetScale)
+COPY my.cnf /usr/local/etc/php/conf.d/my.cnf
 
 # Set permissions
-RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
+RUN chown -R www-data:www-data /var/www/html \
+ && chmod -R 755 /var/www/html
 
-# Inject PlanetScale client-side SSL configuration
-COPY my.cnf /etc/mysql/my.cnf
-
+# Expose HTTP
 EXPOSE 80
+
+# Start Apache
 CMD ["apache2-foreground"]
