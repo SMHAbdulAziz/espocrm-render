@@ -24,5 +24,9 @@ RUN chown -R www-data:www-data /var/www/html \
 EXPOSE 80
 
 # Dockerfile snippet
+<<<<<<< Updated upstream
 COPY planetscale-ca.pem /etc/ssl/certs/planetscale-ca.pem
 
+=======
+COPY planetscale-ca.pem /etc/ssl/certs/planetscale-ca.pem
+>>>>>>> Stashed changes
