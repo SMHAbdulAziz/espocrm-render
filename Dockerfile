@@ -23,17 +23,17 @@ RUN chown -R www-data:www-data /var/www/html && \
 # Add PlanetScale SSL cert
 COPY planetscale-ca.pem /etc/ssl/certs/planetscale-ca.pem
 
-# Create dummy config.php for EspoCRM installer
+# Inject secrets into config.php if they exist in environment
 RUN mkdir -p /var/www/html/data && \
-    echo "<?php return array( \
-        'database' => array( \
-            'driver' => 'pdo_mysql', \
-            'host' => 'localhost', \
-            'dbname' => 'espocrm', \
-            'user' => 'root', \
-            'password' => 'password', \
-            'charset' => 'utf8mb4' \
-        ) \
-    );" > /var/www/html/data/config.php
+    echo "<?php return [
+    'database' => [
+        'driver' => 'pdo_mysql',
+        'host' => getenv('DB_HOST'),
+        'dbname' => getenv('DB_NAME'),
+        'user' => getenv('DB_USER'),
+        'password' => getenv('DB_PASSWORD'),
+        'charset' => 'utf8mb4',
+    ]
+];" > /var/www/html/data/config.php
 
 EXPOSE 80
