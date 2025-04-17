@@ -12,11 +12,14 @@ RUN echo '<Directory /var/www/html/public/>\n\
     Require all granted\n\
 </Directory>' >> /etc/apache2/apache2.conf
 
-# Set Apache document root to EspoCRM's public folder
+# Update Apache config to point to the public folder
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf
 
-# Download and extract EspoCRM
+# Set working directory
 WORKDIR /var/www/html
+
+# Clean and download EspoCRM
+RUN rm -rf /var/www/html/*
 ADD https://www.espocrm.com/downloads/EspoCRM-7.5.6.zip espocrm.zip
 
 RUN unzip espocrm.zip && \
@@ -24,7 +27,7 @@ RUN unzip espocrm.zip && \
     mv EspoCRM*/* . && \
     rm -rf EspoCRM*
 
-# Set permissions
+# Set correct permissions
 RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
 
 EXPOSE 80
