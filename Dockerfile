@@ -1,18 +1,19 @@
 FROM php:8.1-apache
 
-# Install MySQL and required PHP extensions
+# Install required packages and PHP extensions
 RUN apt-get update && \
-    apt-get install -y default-mysql-server default-mysql-client unzip libzip-dev zip libpng-dev libicu-dev && \
+    apt-get install -y unzip libzip-dev zip libpng-dev libicu-dev ca-certificates && \
     docker-php-ext-install mysqli pdo pdo_mysql zip gd intl && \
     a2enmod rewrite
 
-# Configure Apache
-RUN { \
-    echo '<Directory /var/www/html/>'; \
-    echo '    AllowOverride All'; \
-    echo '    Require all granted'; \
-    echo '</Directory>'; \
-} >> /etc/apache2/apache2.conf
+# Configure Apache to allow .htaccess overrides
+RUN echo '<Directory /var/www/html/public/>\n\
+    AllowOverride All\n\
+    Require all granted\n\
+</Directory>' >> /etc/apache2/apache2.conf
+
+# Update Apache document root to /public
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf
 
 # Download and install EspoCRM
 WORKDIR /tmp
@@ -22,25 +23,12 @@ RUN unzip espocrm.zip && \
     cp -a EspoCRM-7.5.6/. /var/www/html/ && \
     rm -rf EspoCRM* espocrm.zip
 
-# Set permissions
+# Set correct permissions
 RUN chown -R www-data:www-data /var/www/html && \
-    chmod -R 755 /var/www/html && \
-    find /var/www/html -type d -exec chmod 755 {} \; && \
-    find /var/www/html -type f -exec chmod 644 {} \;
+    chmod -R 755 /var/www/html
 
-# Create startup script
-RUN echo '#!/bin/bash\n\
-mkdir -p /var/run/mysqld\n\
-chown -R mysql:mysql /var/run/mysqld\n\
-service mariadb start || service mysql start\n\
-sleep 5\n\
-mysql -e "CREATE DATABASE IF NOT EXISTS espocrm;"\n\
-mysql -e "CREATE USER IF NOT EXISTS '"'"'espouser'"'"'@'"'"'localhost'"'"' IDENTIFIED BY '"'"'espopassword'"'"';"\n\
-mysql -e "GRANT ALL PRIVILEGES ON espocrm.* TO '"'"'espouser'"'"'@'"'"'localhost'"'"';"\n\
-mysql -e "FLUSH PRIVILEGES;"\n\
-apache2-foreground\n' > /usr/local/bin/startup.sh && \
-    chmod +x /usr/local/bin/startup.sh
+# Add PlanetScale-compatible SSL config
+COPY my.cnf /etc/mysql/my.cnf
 
 EXPOSE 80
-COPY my.cnf /etc/mysql/my.cnf
-CMD ["/usr/local/bin/startup.sh"]
+CMD ["apache2-foreground"]
