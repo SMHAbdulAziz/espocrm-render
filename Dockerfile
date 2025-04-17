@@ -37,4 +37,8 @@ RUN mkdir -p /var/www/html/data && \
             'user' => 'dummyuser',
             'password' => 'dummypass',
         ],
+<<<<<<< HEAD
     ]; ?>" > /var/www/html/data/config.php
+=======
+    ]; ?>" > /var/www/html/data/config.php
+>>>>>>> 8b897dea5d118745915d2cb2f06e18cc2203aa60
