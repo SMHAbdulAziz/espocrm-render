@@ -25,14 +25,6 @@ COPY planetscale-ca.pem /etc/ssl/certs/planetscale-ca.pem
 
 # Create config.php using secrets passed from environment
 RUN mkdir -p /var/www/html/data && \
-    echo "<?php return [" \
-    "'database' => [" \
-    "'driver' => 'pdo_mysql'," \
-    "'host' => getenv('DB_HOST')," \
-    "'dbname' => getenv('DB_NAME')," \
-    "'user' => getenv('DB_USER')," \
-    "'password' => getenv('DB_PASSWORD')," \
-    "'charset' => 'utf8mb4'," \
-    "]];" > /var/www/html/data/config.php
+    echo "<?php return [\"database\" => [\"driver\" => \"pdo_mysql\", \"host\" => getenv('DB_HOST'), \"dbname\" => getenv('DB_NAME'), \"user\" => getenv('DB_USER'), \"password\" => getenv('DB_PASSWORD'), \"charset\" => \"utf8mb4\", ]]; ?>" > /var/www/html/data/config.php
 
 EXPOSE 80
