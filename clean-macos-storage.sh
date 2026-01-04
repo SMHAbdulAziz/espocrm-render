@@ -138,31 +138,6 @@ clean_directory() {
     fi
 }
 
-# Clean files matching pattern
-clean_files_pattern() {
-    local pattern="$1"
-    local description="$2"
-    
-    if [ "$DRY_RUN" = true ]; then
-        local count=$(find $pattern 2>/dev/null | wc -l | xargs)
-        if [ "$count" -gt 0 ]; then
-            print_warning "[DRY RUN] Would clean $count files: $description"
-        fi
-        return
-    fi
-    
-    if confirm "Clean $description?"; then
-        local count=$(find $pattern -delete 2>/dev/null | wc -l | xargs)
-        if [ "$count" -gt 0 ]; then
-            print_success "$description cleaned: $count files"
-        else
-            print_info "$description: No files found"
-        fi
-    else
-        print_info "$description: Skipped"
-    fi
-}
-
 #######################################################################
 # Cleaning Functions
 #######################################################################
@@ -471,7 +446,10 @@ echo ""
 # Display summary
 print_header "Cleaning Complete"
 if [ "$DRY_RUN" = false ]; then
-    print_success "Total space freed: ${TOTAL_FREED} MB ($(echo "scale=2; $TOTAL_FREED/1024" | bc) GB)"
+    # Calculate GB using bash arithmetic (avoiding bc dependency)
+    gb_whole=$((TOTAL_FREED / 1024))
+    gb_decimal=$(( (TOTAL_FREED * 100 / 1024) % 100 ))
+    printf "${GREEN}✓ Total space freed: %d MB (%d.%02d GB)${NC}\n" "$TOTAL_FREED" "$gb_whole" "$gb_decimal"
 else
     print_info "Dry run complete. Run without --dry-run to actually clean files."
 fi
